@@ -1,13 +1,31 @@
-defmodule ElixirNativeVisualization.Mixfile do
+defmodule Mix.Tasks.Compile.CMake do
+  use Mix.Task
+
+  def run(_args) do
+    System.cmd("mkdir", ["-p", "_build"], stderr_to_stdout: true)
+    System.cmd("cmake", ["../c_src"], cd: "_build", stderr_to_stdout: true)
+  end
+end
+
+defmodule Mix.Tasks.Compile.Make do
+  use Mix.Task
+
+  def run(_args) do
+    System.cmd("make", [], cd: "_build", stderr_to_stdout: true)
+  end
+end
+
+defmodule NatVis.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :elixir_native_visualization,
+      app: :nat_vis,
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
-      deps: deps()
+      deps: deps(),
+      compile: Mix.compilers ++ [:c_make, :make]
     ]
   end
 

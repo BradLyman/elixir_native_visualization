@@ -1,3 +1,7 @@
+compile_commands.json
+
+build/
+
 # The directory Mix will write compiled artifacts to.
 /_build/
 
