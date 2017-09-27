@@ -14,5 +14,7 @@ defmodule NatVis do
   """
   def open_window, do: raise "Not implemented!"
 
+  def close_window(_window), do: raise "not implemented"
+
 end
 
