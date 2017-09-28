@@ -4,9 +4,8 @@
 
 using NatVis::Context;
 
-Context::Context(ErlNifEnv* env, ErlNifResourceType* erlSdlWindow)
+Context::Context(ErlNifEnv* env)
     : ok{enif_make_atom(env, "ok")}
-    , SDLWindow{*erlSdlWindow}
 {
     auto resultCode = SDL_Init(SDL_INIT_EVERYTHING);
     if (resultCode < 0)
@@ -51,7 +50,7 @@ int Context::load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
                 flags,
                 &tried);
 
-        *priv_data = (void*)new Context{env, sdlWindow};
+        *priv_data = (void*)new Context{env};
     }
     catch (std::exception& ex)
     {

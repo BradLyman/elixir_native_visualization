@@ -10,6 +10,9 @@ namespace NatVis
 struct SDLWindow
 {
     SDL_Window* raw;
+
+    /** Erlang resource handle. Populated by Context::load. */
+    static ErlNifResourceType* erl_type;
 };
 
 /**
@@ -18,15 +21,13 @@ struct SDLWindow
 class Context
 {
 private:
-    Context(ErlNifEnv* env, ErlNifResourceType* ErlSdlWindow);
+    Context(ErlNifEnv* env);
     ~Context();
     Context(const Context&) = delete;
     Context(Context&&) = delete;
 
 public:
     const ERL_NIF_TERM ok;
-
-    ErlNifResourceType& SDLWindow;
 
 public:
     /**

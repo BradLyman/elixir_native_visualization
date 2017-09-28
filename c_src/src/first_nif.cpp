@@ -1,3 +1,4 @@
+#include <ErlResourcePtr.hpp>
 #include "Context.hpp"
 
 #include <erl_nif.h>
@@ -7,16 +8,12 @@
 
 using NatVis::Context;
 
-namespace
-{;
-
-ERL_NIF_TERM open_window(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+static ERL_NIF_TERM open_window(
+    ErlNifEnv* env,
+    int argc,
+    const ERL_NIF_TERM argv[])
 {
-    NatVis::SDLWindow* window =
-        reinterpret_cast<NatVis::SDLWindow*>(
-            enif_alloc_resource(
-                &Context::in(env).SDLWindow,
-                sizeof(NatVis::SDLWindow)));
+    auto window = ErlResourcePtr<NatVis::SDLWindow>{};
 
     window->raw = SDL_CreateWindow(
         "NatVis",
@@ -26,35 +23,36 @@ ERL_NIF_TERM open_window(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         480,
         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
-    ERL_NIF_TERM window_term = enif_make_resource(env, (void*)window);
-    enif_release_resource((void*)window);
-
-    return window_term;
+    return window.asTerm(env);
 }
 
-ERL_NIF_TERM close_window(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+static ERL_NIF_TERM close_window(
+    ErlNifEnv* env,
+    int argc,
+    const ERL_NIF_TERM argv[])
 {
-    NatVis::SDLWindow* window;
-    auto res = enif_get_resource(env, argv[0], &Context::in(env).SDLWindow, (void**)&window);
-    if (!res)
+    try
     {
-        std::cout << "Could not get resource type!" << std::endl;
-    }
+        auto window =
+            ErlResourcePtr<NatVis::SDLWindow>::fromTerm(env, argv[0]);
 
-    SDL_DestroyWindow(window->raw);
-    window->raw = nullptr;
+        SDL_DestroyWindow(window->raw);
+        window->raw = nullptr;
+    }
+    catch (std::exception& ex)
+    {
+        enif_raise_exception(
+            env, enif_make_string(env, ex.what(), ERL_NIF_LATIN1));
+    }
 
     return Context::in(env).ok;
 }
 
-
-ErlNifFunc exported_funcs[] = {
+static ErlNifFunc exported_funcs[] = {
     // { name, airity, function }
     {"open_window", 0, open_window},
     {"close_window", 1, close_window},
 };
-
-}
 
 ERL_NIF_INIT(
     Elixir.NatVis,
