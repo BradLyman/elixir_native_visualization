@@ -2,8 +2,11 @@ defmodule Mix.Tasks.Compile.CMake do
   use Mix.Task
 
   def run(_args) do
-    System.cmd("mkdir", ["-p", "_build"], stderr_to_stdout: true)
-    System.cmd("cmake", ["../c_src"], cd: "_build", stderr_to_stdout: true)
+    {out, _} = System.cmd "mkdir", ["-p", "_build"], stderr_to_stdout: true
+    IO.puts out
+    {out, _} = System.cmd "cmake", ["../c_src"], cd: "_build", stderr_to_stdout: true
+    IO.puts out
+    :ok
   end
 end
 
@@ -11,7 +14,9 @@ defmodule Mix.Tasks.Compile.Make do
   use Mix.Task
 
   def run(_args) do
-    System.cmd("make", [], cd: "_build", stderr_to_stdout: true)
+    {out, _} = System.cmd("make", [], cd: "_build", stderr_to_stdout: true)
+    IO.puts out
+    :ok
   end
 end
 
@@ -25,7 +30,7 @@ defmodule NatVis.Mixfile do
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
       deps: deps(),
-      compile: Mix.compilers ++ [:c_make, :make]
+      compilers: [:c_make, :make] ++ Mix.compilers
     ]
   end
 

@@ -4,10 +4,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(SDL2_BUILDING_LIBRARY true)
 
 find_package(SDL2 REQUIRED)
+string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 
 message("sdl found: ${SDL2_FOUND}")
 message("sdl dir: ${SDL2_INCLUDE_DIRS}")
-message("sdl libs: ${SDL2_LIBRARIES}")
+message("sdl libs: ${SDL2_LIBRARIES}'")
+
 
 include_directories("./inc")
 include_directories("/usr/lib/erlang/usr/include")
