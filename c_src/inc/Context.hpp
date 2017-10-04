@@ -3,6 +3,7 @@
 
 #include <erl_nif.h>
 #include <SDL.h>
+#include <SDL_opengl.h>
 
 namespace NatVis
 {
@@ -10,6 +11,7 @@ namespace NatVis
 struct SDLWindow
 {
     SDL_Window* raw;
+    SDL_GLContext context;
 
     /** Erlang resource handle. Populated by Context::load. */
     static ErlNifResourceType* erl_type;
@@ -28,6 +30,7 @@ private:
 
 public:
     const ERL_NIF_TERM ok;
+    const ERL_NIF_TERM stop;
 
 public:
     /**

@@ -3,9 +3,13 @@
 #include <iostream>
 
 using NatVis::Context;
+using NatVis::SDLWindow;
+
+ErlNifResourceType* SDLWindow::erl_type;
 
 Context::Context(ErlNifEnv* env)
     : ok{enif_make_atom(env, "ok")}
+    , stop{enif_make_atom(env, "stop")}
 {
     auto resultCode = SDL_Init(SDL_INIT_EVERYTHING);
     if (resultCode < 0)
@@ -29,6 +33,7 @@ static void dtor(ErlNifEnv* env, void* resource) {
     NatVis::SDLWindow* window = (NatVis::SDLWindow*)resource;
     if (window->raw != nullptr)
     {
+        SDL_GL_DeleteContext(window->context);
         SDL_DestroyWindow(window->raw);
         window->raw = nullptr;
     }
@@ -41,7 +46,7 @@ int Context::load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
         ErlNifResourceFlags flags =
             (ErlNifResourceFlags)(ERL_NIF_RT_TAKEOVER | ERL_NIF_RT_CREATE);
         ErlNifResourceFlags tried;
-        ErlNifResourceType* sdlWindow =
+        SDLWindow::erl_type =
             enif_open_resource_type(
                 env,
                 "NatVis",
