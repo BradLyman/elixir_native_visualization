@@ -21,6 +21,7 @@ public:
     {
         resource = reinterpret_cast<Res*>(
             enif_alloc_resource(Res::erl_type, sizeof(Res)));
+        new ((void*)resource) Res{}; // in-place new
     }
 
     /**

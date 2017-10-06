@@ -8,18 +8,56 @@
 #include <SDL_opengl.h>
 
 #include <iostream>
+#include <sstream>
 
-using NatVis::Context;
+using namespace NatVis;
+using namespace std;
+
+namespace {
+/**
+ * Initialize glew to load the various OpenGL function pointers.
+ * This should be re-called each time a new context is made current.
+ * @throws GLException if there is an error during initialization
+ */
+void initGlew()
+{
+    // initialize
+    glewExperimental = true;
+    auto result = glewInit();
+    if (result != GLEW_NO_ERROR)
+    {
+        throw GLException({ "Failed to initialize GLEW!"
+                          , (const char*)glewGetErrorString(result)
+                          });
+    }
+
+    // A weird bug with GL/Glew will cause a GL_INVALID_ENUM to be raised
+    // during initialization. This _shouldn't_ negatively impact the program,
+    // so check for the error and swallow the expected here.
+    auto glErr = glGetError();
+    if (glErr != GL_NO_ERROR && glErr != GL_INVALID_ENUM)
+    {
+        stringstream ss;
+        ss << result;
+        throw GLException{ "Unexpected GL error while initializing glew!"
+                         , "Error Code " + ss.str()
+                         };
+    }
+
+    // If there were more errors than just the one.. it's a problem so throw
+    THROW_ON_GL_ERROR();
+}
+
+};
 
 static ERL_NIF_TERM open_window(
     ErlNifEnv* env,
     int argc,
     const ERL_NIF_TERM argv[])
 {
-    auto window = ErlResourcePtr<NatVis::SDLWindow>{};
 
-    window->raw = SDL_CreateWindow(
-        "NatVis",
+    SDL_Window* rawWindow = SDL_CreateWindow(
+        "tetra-creative",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         640,
@@ -31,8 +69,8 @@ static ERL_NIF_TERM open_window(
     SDL_GL_SetAttribute(
         SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    window->context = SDL_GL_CreateContext(window->raw);
-    if (window->context == NULL) {
+    SDL_GLContext rawContext = SDL_GL_CreateContext(rawWindow);
+    if (rawContext == NULL) {
         enif_raise_exception(
             env,
             enif_make_string(
@@ -41,18 +79,21 @@ static ERL_NIF_TERM open_window(
                 ERL_NIF_LATIN1));
     }
 
-    SDL_GL_MakeCurrent(window->raw, window->context);
+    SDL_GL_MakeCurrent(rawWindow, rawContext);
     SDL_GL_SetSwapInterval(1);
 
-    auto result = glewInit();
-    if (result != GLEW_OK) {
-        enif_raise_exception(
-            env,
-            enif_make_string(
-                env,
-                "could not initialize glew",
-                ERL_NIF_LATIN1));
-    }
+    initGlew();
+
+    auto window = ErlResourcePtr<NatVis::SDLWindow>{};
+
+    window->raw = rawWindow;
+    window->context = rawContext;
+    window->vertices
+        .bind(BindTarget::Array)
+        .write({ {0.0f, 0.0f}
+               , {0.5f, 0.5f}
+               , {-0.5f, 0.5f}
+               });
 
     return window.asTerm(env);
 }
@@ -89,7 +130,6 @@ static ERL_NIF_TERM update(
     {
         int i;
         enif_get_int(env, argv[0], &i);
-        std::cout << "Got " << i << std::endl;
 
         auto window =
             ErlResourcePtr<NatVis::SDLWindow>::fromTerm(env, argv[1]);
