@@ -27,6 +27,8 @@ add_library(NatVis SHARED
     ./src/Context.cpp
     ./src/gl/GLException.cpp
     ./src/gl/Buffer.cpp
-    ./src/gl/VAO.cpp)
+    ./src/gl/VAO.cpp
+    ./src/gl/Shader.cpp
+    ./src/gl/Program.cpp)
 target_link_libraries(NatVis ${SDL2_LIBRARIES} ${GLEW_LIBRARIES})
 

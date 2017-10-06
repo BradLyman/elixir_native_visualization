@@ -2,6 +2,8 @@
 
 #include <ErlResourcePtr.hpp>
 #include "Context.hpp"
+#include <gl/Shader.hpp>
+#include <gl/Program.hpp>
 
 #include <erl_nif.h>
 #include <SDL.h>
@@ -100,6 +102,7 @@ static ERL_NIF_TERM open_window(
         .withAttrib(&Vertex::position)
         .toBuffer(window->vertices);
 
+
     return window.asTerm(env);
 }
 
@@ -158,6 +161,37 @@ static ERL_NIF_TERM update(
 
         glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        Shader vertex = Shader{ShaderType::VERTEX};
+        vertex.compile(R"prg(
+        #version 130
+
+        in vec2 vVertex;
+        void main() {
+            gl_Position = vec4(vVertex, 0.0f, 1.0f);
+        }
+        )prg");
+
+        Shader frag = Shader{ShaderType::FRAGMENT};
+        frag.compile(R"prg(
+        #version 130
+
+        out vec4 vFragColor;
+        void main() {
+            vFragColor = vec4(1.0f);
+        }
+        )prg");
+
+        auto program = ProgramLinker{}
+            .vertexAttributes({"vertex"})
+            .attach(vertex)
+            .attach(frag)
+            .link();
+
+        program.use();
+        window->vao.bind();
+
+        window->vertices.draw(Primitive::Triangles, 3);
 
         SDL_GL_SwapWindow(window->raw);
 
