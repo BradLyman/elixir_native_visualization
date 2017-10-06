@@ -95,6 +95,11 @@ static ERL_NIF_TERM open_window(
                , {-0.5f, 0.5f}
                });
 
+    window->vao
+        .bindLayoutFor<Vertex>()
+        .withAttrib(&Vertex::position)
+        .toBuffer(window->vertices);
+
     return window.asTerm(env);
 }
 
