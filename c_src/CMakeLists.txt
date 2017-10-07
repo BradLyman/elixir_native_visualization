@@ -22,13 +22,8 @@ include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${GLEW_INCLUDE_DIRS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++1z")
 
-add_library(NatVis SHARED
-    ./src/first_nif.cpp
-    ./src/Context.cpp
-    ./src/gl/GLException.cpp
-    ./src/gl/Buffer.cpp
-    ./src/gl/VAO.cpp
-    ./src/gl/Shader.cpp
-    ./src/gl/Program.cpp)
+file (GLOB_RECURSE SOURCE_FILES "./src/*.cpp")
+
+add_library(NatVis SHARED ${SOURCE_FILES})
 target_link_libraries(NatVis ${SDL2_LIBRARIES} ${GLEW_LIBRARIES})
 
