@@ -1,30 +1,10 @@
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
 
-#include <gl/Buffer.hpp>
-#include <gl/VAO.hpp>
 #include <erl_nif.h>
-#include <SDL.h>
-#include <SDL_opengl.h>
 
 namespace NatVis
-{
-
-struct Vertex
-{
-    std::array<float, 2> position;
-};
-
-struct SDLWindow
-{
-    SDL_Window* raw;
-    SDL_GLContext context;
-    Buffer<Vertex> vertices;
-    Vao vao;
-
-    /** Erlang resource handle. Populated by Context::load. */
-    static ErlNifResourceType* erl_type;
-};
+{;
 
 /**
  * This object owns all global context for the nif.

@@ -1,9 +1,8 @@
 #ifndef BUFFER_HPP
 #define BUFFER_HPP
 
-#include <gl/GLException.hpp>
-
 #include <GL/glew.h>
+#include <gl/GLException.hpp>
 
 #include <vector>
 #include <memory>

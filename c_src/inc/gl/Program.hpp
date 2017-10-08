@@ -1,9 +1,9 @@
 #ifndef PROGRAM_HPP
 #define PROGRAM_HPP
 
-#include <gl/Shader.hpp>
-
 #include <GL/glew.h>
+
+#include <gl/Shader.hpp>
 
 #include <array>
 #include <vector>

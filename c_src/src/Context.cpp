@@ -1,11 +1,7 @@
-#include "Context.hpp"
+#include <ApplicationWindow.hpp>
+#include <Context.hpp>
 
-#include <iostream>
-
-using NatVis::Context;
-using NatVis::SDLWindow;
-
-ErlNifResourceType* SDLWindow::erl_type;
+using namespace NatVis;
 
 Context::Context(ErlNifEnv* env)
     : ok{enif_make_atom(env, "ok")}
@@ -29,14 +25,10 @@ Context& Context::in(ErlNifEnv* env)
     return *reinterpret_cast<Context*>(enif_priv_data(env));
 }
 
-static void dtor(ErlNifEnv* env, void* resource) {
-    NatVis::SDLWindow* window = (NatVis::SDLWindow*)resource;
-    if (window->raw != nullptr)
-    {
-        SDL_GL_DeleteContext(window->context);
-        SDL_DestroyWindow(window->raw);
-        window->raw = nullptr;
-    }
+template <class T>
+static void destroy(ErlNifEnv* env, void* resource) {
+    T* window = (T*)resource;
+    window->~T(); // manually call the destructor
 }
 
 int Context::load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
@@ -46,12 +38,12 @@ int Context::load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
         ErlNifResourceFlags flags =
             (ErlNifResourceFlags)(ERL_NIF_RT_TAKEOVER | ERL_NIF_RT_CREATE);
         ErlNifResourceFlags tried;
-        SDLWindow::erl_type =
+        ApplicationWindow::erl_type =
             enif_open_resource_type(
                 env,
                 "NatVis",
-                "SDLWindow",
-                dtor,
+                "ApplicationWindow",
+                destroy<ApplicationWindow>,
                 flags,
                 &tried);
 

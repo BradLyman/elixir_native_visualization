@@ -1,9 +1,9 @@
 #ifndef VAO_HPP
 #define VAO_HPP
 
-#include <gl/Buffer.hpp>
-
 #include <GL/glew.h>
+
+#include <gl/Buffer.hpp>
 
 #include <string>
 #include <array>
