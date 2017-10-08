@@ -2,7 +2,9 @@
 #define ERL_RESOURCE_PTR_HPP
 
 #include <erl_nif.h>
-#include <stdexcept>
+#include <exception>
+
+class InvalidResource : public std::exception { };
 
 /**
  * This class is responsible for holding an Erlang resource.
@@ -100,7 +102,7 @@ public:
         auto result = enif_get_resource(env, term, Res::erl_type, (void**)&raw);
         if (!result)
         {
-            throw new std::runtime_error{"Could not extract native resource"};
+            throw InvalidResource{};
         }
 
         return ErlResourcePtr<Res>{reinterpret_cast<Res*>(raw)};

@@ -29,10 +29,9 @@ static ERL_NIF_TERM close_window(
 
         window->close();
     }
-    catch (std::exception& ex)
+    catch (InvalidResource&)
     {
-        enif_raise_exception(
-            env, enif_make_string(env, ex.what(), ERL_NIF_LATIN1));
+        return enif_make_badarg(env);
     }
     return Context::in(env).ok;
 }
@@ -48,7 +47,6 @@ static ERL_NIF_TERM update(
         enif_get_int(env, argv[0], &i);
 
         auto window = ErlResourcePtr<ApplicationWindow>::fromTerm(env, argv[1]);
-
         switch (window->update())
         {
             case Status::Continue:
@@ -57,6 +55,10 @@ static ERL_NIF_TERM update(
             case Status::Stop:
                 return Context::in(env).stop;
         }
+    }
+    catch (InvalidResource&)
+    {
+        return enif_make_badarg(env);
     }
     catch (std::exception& ex)
     {
