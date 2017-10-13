@@ -39,6 +39,8 @@ namespace uniforms
     void uniformValue(GLint location, const std::array<float, 4>& vec);
 }
 
+class ConfigRenderPipeline;
+
 /**
  * This class represents an OpenGL Program object.
  */
@@ -64,6 +66,11 @@ public:
      * Delete the shader program.
      */
     ~Program();
+
+    /**
+     * Attach shaders and specify vertex attributes for this program.
+     */
+    ConfigRenderPipeline configRenderPipeline();
 
     /**
      * Get a non-owning reference to the raw OpenGL program object.
@@ -100,35 +107,37 @@ private:
 /**
  * This class constructs an OpenGL Program by linking shaders and attributes.
  */
-class ProgramLinker
+class ConfigRenderPipeline
 {
 public:
-    ProgramLinker() = default;
+    ConfigRenderPipeline(Program& program);
+    ConfigRenderPipeline(ConfigRenderPipeline&&) = default;
+    ConfigRenderPipeline(const ConfigRenderPipeline&) = default;
 
     /**
      * Set the vertex attribute names for this shader program.
-     * These should match the 'in' values from the vertex shader, and if they
-     * are incorrect will cause link to throw.
-     * This will effectively call glBindAttribLocation for each attribute with the
+     * Calls are order sensative, the first call will set the first attribute,
+     * the second sets the second attribute, and so on.
+     * This will call glBindAttribLocation for each attribute with the
      * corresponding index.
      */
-    ProgramLinker& vertexAttributes(const std::vector<std::string>& attribs);
+    ConfigRenderPipeline& withAttribute(const std::string atribName);
 
     /**
-     * Tell the builder to attach the shader to the program before linking.
-     * References to the shaders will remain alive until link() is called.
+     * Attach a shader to this program instance for linking.
      */
-    ProgramLinker& attach(Shader& shader);
+    ConfigRenderPipeline& withShader(Shader& shader);
 
     /**
-     * Link the shaders and vertex attributes to create the Program.
+     * Link the shaders and vertex attributes to the program.
      * @throws GLException if there is a link error.
      */
-    Program link();
+    void link();
 
 private:
-    std::vector<std::string> _vertexAttributes;
-    std::vector<Shader*> _shaders;
+    std::vector<std::string> vertexAttributes;
+    std::vector<Shader*> shaders;
+    Program& program;
 };
 
 } /* namespace NatVis */

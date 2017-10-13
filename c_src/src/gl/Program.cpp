@@ -64,6 +64,12 @@ Program::~Program()
     }
 }
 
+ConfigRenderPipeline
+Program::configRenderPipeline()
+{
+    return ConfigRenderPipeline{*this};
+}
+
 GLuint
 Program::raw()
 {
@@ -82,34 +88,36 @@ Program::uniformLocation(const string& uniform)
     return glGetUniformLocation(handle, uniform.c_str());
 }
 
-ProgramLinker&
-ProgramLinker::vertexAttributes(const vector<string>& attribs)
+ConfigRenderPipeline::ConfigRenderPipeline(Program& program)
+    : program{program}
+{ }
+
+ConfigRenderPipeline&
+ConfigRenderPipeline::withAttribute(const string attrib)
 {
-    _vertexAttributes = attribs;
+    vertexAttributes.push_back(attrib);
     return *this;
 }
 
-ProgramLinker&
-ProgramLinker::attach(Shader& shader)
+ConfigRenderPipeline&
+ConfigRenderPipeline::withShader(Shader& shader)
 {
-    _shaders.push_back(&shader);
+    shaders.push_back(&shader);
     return *this;
 }
 
-Program
-ProgramLinker::link()
+void
+ConfigRenderPipeline::link()
 {
-    auto program = Program{};
-
-    for (auto shader : _shaders)
+    for (auto shader : shaders)
     {
         glAttachShader(program.raw(), shader->raw());
     }
 
-    const int size = _vertexAttributes.size();
+    const int size = vertexAttributes.size();
     for (int idx = 0; idx < size; idx++)
     {
-        auto attrib = _vertexAttributes[idx].c_str();
+        auto attrib = vertexAttributes[idx].c_str();
         glBindAttribLocation(program.raw(), idx, attrib);
     }
 
@@ -125,7 +133,5 @@ ProgramLinker::link()
                          , infoLog
                          };
     }
-
-    return program;
 }
 
