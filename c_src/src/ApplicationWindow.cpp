@@ -6,12 +6,14 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <thread>
 
 using namespace std;
+using namespace std::chrono;
 using namespace NatVis;
 
 namespace
-{;
+{
 
 /**
  * Initialize glew to load the various OpenGL function pointers.
@@ -53,8 +55,6 @@ ErlNifResourceType* ApplicationWindow::erl_type;
 
 ApplicationWindow::ApplicationWindow()
     : isOpen{true}
-    , vao{nullptr}
-    , vertices{nullptr}
     , sdlWindow{nullptr, CloseWindow{}}
 {
    sdlWindow.reset(
@@ -81,19 +81,7 @@ ApplicationWindow::ApplicationWindow()
 
     initGlew();
 
-    vertices = make_unique<Buffer<Vertex>>();
-    vao = make_unique<Vao>();
-
-    vertices->bind(BindTarget::Array)
-        .write(
-            { {0.0f, 0.0f}
-            , {0.5f, 0.5f}
-            , {-0.5f, 0.5f}
-            });
-
-    vao->bindLayoutFor<Vertex>()
-        .withAttrib(&Vertex::position)
-        .toBuffer(*vertices);
+    graphicsContext = make_unique<GraphicsContext>();
 }
 
 ApplicationWindow::~ApplicationWindow()
@@ -104,10 +92,7 @@ ApplicationWindow::~ApplicationWindow()
 void
 ApplicationWindow::close() noexcept
 {
-    // release OpenGL resources before closing the window and deleting the
-    // context.
-    vertices.reset(nullptr);
-    vao.reset(nullptr);
+    graphicsContext.reset(nullptr);
 
     SDL_GL_DeleteContext(context);
     sdlWindow.reset(nullptr);
@@ -120,7 +105,6 @@ ApplicationWindow::update()
 {
     SDL_GL_MakeCurrent(sdlWindow.get(), context);
 
-    auto stop = false;
     auto event = SDL_Event{};
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -135,44 +119,10 @@ ApplicationWindow::update()
         }
     }
 
-    glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    Shader vertex = Shader{ShaderType::VERTEX};
-    vertex.compile(R"prg(
-    #version 130
-
-    in vec2 vVertex;
-    void main() {
-        gl_Position = vec4(vVertex, 0.0f, 1.0f);
+    if (graphicsContext) {
+        graphicsContext->renderFrame();
+        SDL_GL_SwapWindow(sdlWindow.get());
     }
-    )prg");
-
-    Shader frag = Shader{ShaderType::FRAGMENT};
-    frag.compile(R"prg(
-    #version 130
-
-    out vec4 vFragColor;
-    void main() {
-        vFragColor = vec4(1.0f);
-    }
-    )prg");
-
-    auto program = ProgramLinker{}
-        .vertexAttributes({"vertex"})
-        .attach(vertex)
-        .attach(frag)
-        .link();
-
-    vao->bind();
-    program.use();
-    THROW_ON_GL_ERROR();
-
-    vertices->draw(Primitive::Triangles, 3);
-
-    SDL_GL_SwapWindow(sdlWindow.get());
-
-    SDL_Delay(5);
 
     return Status::Continue;
 }

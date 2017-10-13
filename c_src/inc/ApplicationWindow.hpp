@@ -1,20 +1,18 @@
 #ifndef APPLICATION_WINDOW_HPP
 #define APPLICATION_WINDOW_HPP
 
+#include <GraphicsContext.hpp>
+
 #include <gl/Buffer.hpp>
 #include <gl/VAO.hpp>
 #include <erl_nif.h>
 
 #include <SDL.h>
 #include <memory>
+#include <chrono>
 
 namespace NatVis
 {;
-
-struct Vertex
-{
-    std::array<float, 2> position;
-};
 
 enum class Status
 {
@@ -38,15 +36,15 @@ public:
 
     Status update();
 
-    std::unique_ptr<Vao> vao;
-    std::unique_ptr<Buffer<Vertex>> vertices;
     SDL_GLContext context;
     RawWindow sdlWindow;
+    std::unique_ptr<GraphicsContext> graphicsContext;
 
     /** Erlang resource handle. Populated by Context::load. */
     static ErlNifResourceType* erl_type;
 
 private:
+    using Timestamp = std::chrono::high_resolution_clock::time_point;
     bool isOpen;
 };
 

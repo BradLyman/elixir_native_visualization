@@ -26,7 +26,6 @@ static ERL_NIF_TERM close_window(
     try
     {
         auto window = ErlResourcePtr<ApplicationWindow>::fromTerm(env, argv[0]);
-
         window->close();
     }
     catch (InvalidResource&)
@@ -47,6 +46,7 @@ static ERL_NIF_TERM update(
         enif_get_int(env, argv[0], &i);
 
         auto window = ErlResourcePtr<ApplicationWindow>::fromTerm(env, argv[1]);
+        enif_consume_timeslice(env, 100);
         switch (window->update())
         {
             case Status::Continue:
