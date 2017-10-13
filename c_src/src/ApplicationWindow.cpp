@@ -57,7 +57,13 @@ ApplicationWindow::ApplicationWindow()
     : isOpen{true}
     , sdlWindow{nullptr, CloseWindow{}}
 {
-   sdlWindow.reset(
+    auto resultCode = SDL_Init(SDL_INIT_EVERYTHING);
+    if (resultCode < 0)
+    {
+        throw std::runtime_error{SDL_GetError()};
+    }
+
+    sdlWindow.reset(
         SDL_CreateWindow(
             "tetra-creative",
             SDL_WINDOWPOS_UNDEFINED,
@@ -87,6 +93,7 @@ ApplicationWindow::ApplicationWindow()
 ApplicationWindow::~ApplicationWindow()
 {
     close();
+    SDL_Quit();
 }
 
 void

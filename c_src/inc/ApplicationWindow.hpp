@@ -32,19 +32,25 @@ public:
     ApplicationWindow();
     ~ApplicationWindow();
 
+    ApplicationWindow(ApplicationWindow&&) = default;
+    ApplicationWindow& operator=(ApplicationWindow&&) = default;
+
+    ApplicationWindow(const ApplicationWindow&) = delete;
+    ApplicationWindow& operator=(const ApplicationWindow&) = delete;
+
     void close() noexcept;
 
     Status update();
 
-    SDL_GLContext context;
-    RawWindow sdlWindow;
-    std::unique_ptr<GraphicsContext> graphicsContext;
 
     /** Erlang resource handle. Populated by Context::load. */
     static ErlNifResourceType* erl_type;
 
 private:
     using Timestamp = std::chrono::high_resolution_clock::time_point;
+    SDL_GLContext context;
+    RawWindow sdlWindow;
+    std::unique_ptr<GraphicsContext> graphicsContext;
     bool isOpen;
 };
 

@@ -1,3 +1,4 @@
+#include <AppThread.hpp>
 #include <ApplicationWindow.hpp>
 #include <Context.hpp>
 
@@ -6,19 +7,10 @@ using namespace NatVis;
 Context::Context(ErlNifEnv* env)
     : ok{enif_make_atom(env, "ok")}
     , stop{enif_make_atom(env, "stop")}
-{
-    auto resultCode = SDL_Init(SDL_INIT_EVERYTHING);
-    if (resultCode < 0)
-    {
-        throw std::runtime_error{SDL_GetError()};
-    }
-    std::cout << "SDL_Init success!" << std::endl;
-};
+{ }
 
 Context::~Context()
-{
-    SDL_Quit();
-};
+{ }
 
 Context& Context::in(ErlNifEnv* env)
 {
@@ -27,8 +19,8 @@ Context& Context::in(ErlNifEnv* env)
 
 template <class T>
 static void destroy(ErlNifEnv* env, void* resource) {
-    T* window = (T*)resource;
-    window->~T(); // manually call the destructor
+    T* typed = (T*)resource;
+    typed->~T(); // manually call the destructor
 }
 
 int Context::load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
@@ -44,6 +36,15 @@ int Context::load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info)
                 "NatVis",
                 "ApplicationWindow",
                 destroy<ApplicationWindow>,
+                flags,
+                &tried);
+
+        AppThread::erl_type =
+            enif_open_resource_type(
+                env,
+                "NatVis",
+                "AppThread",
+                destroy<AppThread>,
                 flags,
                 &tried);
 
