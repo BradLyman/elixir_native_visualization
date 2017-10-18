@@ -13,17 +13,39 @@ using namespace std;
 
 ErlNifResourceType* AppThread::erl_type = nullptr;
 
+namespace
+{
+    void* thread_main(void* rawAppThread) {
+        auto* appThread = reinterpret_cast<AppThread*>(rawAppThread);
+        appThread->threadMain();
+        return nullptr;
+    }
+}
+
 AppThread::AppThread()
     : running{true}
 {
-    app = std::thread{[this]{
-        this->threadMain();
-    }};
+    char threadName[] = "thread opts";
+    auto* opts = enif_thread_opts_create(threadName);
+
+    auto result = enif_thread_create(
+        threadName,
+        &this->erlThread,
+        &thread_main,
+        reinterpret_cast<void*>(this),
+        opts);
+
+    enif_thread_opts_destroy(opts);
+
+    if (result != 0) {
+        throw std::runtime_error{
+            "Failed to create Erlang thread! Error code: " + to_string(result)};
+    }
 }
 
 AppThread::~AppThread() {
     stop();
-    app.join();
+    enif_thread_join(this->erlThread, nullptr);
 }
 
 void
@@ -43,7 +65,16 @@ static ERL_NIF_TERM start(
     int argc,
     const ERL_NIF_TERM argv[])
 {
-    return ErlResourcePtr<AppThread>{}.asTerm(env);
+    try
+    {
+        return ErlResourcePtr<AppThread>{}.asTerm(env);
+    }
+    catch (runtime_error& error) {
+        enif_raise_exception(
+            env,
+            enif_make_string(env, error.what(), ERL_NIF_LATIN1));
+    }
+    return Context::in(env).ok;
 }
 
 static ERL_NIF_TERM stop(

@@ -29,8 +29,8 @@ public:
     static ErlNifResourceType* erl_type;
 
 private:
-    std::thread app;
     std::atomic<bool> running;
+    ErlNifTid erlThread;
 };
 
 } /* namespace NatVis */
