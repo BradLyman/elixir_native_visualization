@@ -13,7 +13,7 @@ namespace NatVis
 
 class AppThread {
 public:
-    AppThread();
+    AppThread(ErlNifPid eventHandler);
     ~AppThread();
 
     AppThread(const AppThread&) = delete;
@@ -31,6 +31,7 @@ public:
 private:
     std::atomic<bool> running;
     ErlNifTid erlThread;
+    ErlNifPid eventHandler;
 };
 
 } /* namespace NatVis */

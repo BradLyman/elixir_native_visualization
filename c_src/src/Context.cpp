@@ -1,8 +1,10 @@
 #include <AppThread.hpp>
 #include <ApplicationWindow.hpp>
 #include <Context.hpp>
+#include <unordered_map>
 
 using namespace NatVis;
+using namespace std;
 
 Context::Context(ErlNifEnv* env)
     : ok{enif_make_atom(env, "ok")}

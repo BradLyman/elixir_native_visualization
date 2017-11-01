@@ -2,6 +2,8 @@
 #define CONTEXT_HPP
 
 #include <erl_nif.h>
+#include <AppThread.hpp>
+#include <unordered_map>
 
 namespace NatVis
 {;
@@ -20,6 +22,8 @@ private:
 public:
     const ERL_NIF_TERM ok;
     const ERL_NIF_TERM stop;
+
+    std::unordered_map<int, AppThread> threads;
 
 public:
     /**

@@ -19,12 +19,20 @@ public:
     /**
      * Allocate a new resource instance.
      */
-    ErlResourcePtr()
-    {
-        resource = reinterpret_cast<Res*>(
+    template <typename ...Args>
+    static ErlResourcePtr<Res> build(Args&&... args) {
+        Res* resource = reinterpret_cast<Res*>(
             enif_alloc_resource(Res::erl_type, sizeof(Res)));
-        new ((void*)resource) Res{}; // in-place new
+        new ((void*)resource) Res(std::forward<Args...>(args...));
+        return ErlResourcePtr<Res>(resource);
     }
+
+private:
+    ErlResourcePtr(Res* toOwn)
+        : resource{toOwn}
+    { }
+
+public:
 
     /**
      * Add a reference to the provided resource to maintain ownership.

@@ -29,7 +29,7 @@ class ApplicationWindow
     using RawWindow = std::unique_ptr<SDL_Window, CloseWindow>;
 
 public:
-    ApplicationWindow();
+    ApplicationWindow(const ErlNifPid eventHandler);
     ~ApplicationWindow();
 
     ApplicationWindow(ApplicationWindow&&) = default;
@@ -52,6 +52,7 @@ private:
     RawWindow sdlWindow;
     std::unique_ptr<GraphicsContext> graphicsContext;
     bool isOpen;
+    ErlNifPid eventHandler;
 };
 
 } /* namespace NatVis */

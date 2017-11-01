@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <thread>
+#include <iostream>
 
 using namespace std;
 using namespace std::chrono;
@@ -53,9 +54,10 @@ void initGlew()
 
 ErlNifResourceType* ApplicationWindow::erl_type;
 
-ApplicationWindow::ApplicationWindow()
+ApplicationWindow::ApplicationWindow(const ErlNifPid eventHandler)
     : isOpen{true}
     , sdlWindow{nullptr, CloseWindow{}}
+    , eventHandler{eventHandler}
 {
     auto resultCode = SDL_Init(SDL_INIT_EVERYTHING);
     if (resultCode < 0)
@@ -122,6 +124,13 @@ ApplicationWindow::update()
                 int w = (int) event.window.data1;
                 int h = (int) event.window.data2;
                 glViewport(0, 0, w, h);
+                ErlNifEnv* env = enif_alloc_env();
+                enif_send(
+                    nullptr,
+                    &eventHandler,
+                    nullptr,
+                    enif_make_atom(env, "resized"));
+                enif_free_env(env);
             }
         }
     }

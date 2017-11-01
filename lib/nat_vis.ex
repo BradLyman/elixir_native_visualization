@@ -1,3 +1,18 @@
+defmodule StdOutEventListener do
+  def start_link do
+    spawn(fn -> run() end)
+  end
+
+  defp run do
+    receive do
+      event ->
+        IO.puts event
+    end
+
+    run()
+  end
+end
+
 defmodule NatVis do
   @moduledoc """
   Documentation for ElixirNativeVisualization.
@@ -9,7 +24,10 @@ defmodule NatVis do
     :erlang.load_nif("_build/libNatVis", 0)
   end
 
-  def start, do: raise "not implemented"
+  def start(_eventlistener), do: raise "not implemented"
+  def start do
+    start StdOutEventListener.start_link()
+  end
 
   def stop(_app), do: raise "not implemented"
 end
