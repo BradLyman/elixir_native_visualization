@@ -42,10 +42,6 @@ public:
 
     Status update();
 
-
-    /** Erlang resource handle. Populated by Context::load. */
-    static ErlNifResourceType* erl_type;
-
 private:
     using Timestamp = std::chrono::high_resolution_clock::time_point;
     SDL_GLContext context;

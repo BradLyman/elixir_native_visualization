@@ -6,7 +6,7 @@ defmodule ElixirNativeVisualizationTest do
     window = NatVis.start
     :timer.sleep(1000)
 
-    result = NatVis.stop window
+    result = NatVis.stopRender window
     assert result == :ok
   end
 end

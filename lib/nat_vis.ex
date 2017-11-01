@@ -24,11 +24,11 @@ defmodule NatVis do
     :erlang.load_nif("_build/libNatVis", 0)
   end
 
-  def start(_eventlistener), do: raise "not implemented"
+  def startRender(_eventlistener), do: raise "not implemented"
   def start do
-    start StdOutEventListener.start_link()
+    startRender StdOutEventListener.start_link()
   end
 
-  def stop(_app), do: raise "not implemented"
+  def stopRender(_app), do: raise "not implemented"
 end
 

@@ -26,7 +26,7 @@ public:
 
     void stop();
 
-    static ErlNifResourceType* erl_type;
+    static int nextId();
 
 private:
     std::atomic<bool> running;

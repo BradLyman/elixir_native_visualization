@@ -52,8 +52,6 @@ void initGlew()
 
 } /* namespace */
 
-ErlNifResourceType* ApplicationWindow::erl_type;
-
 ApplicationWindow::ApplicationWindow(const ErlNifPid eventHandler)
     : isOpen{true}
     , sdlWindow{nullptr, CloseWindow{}}
